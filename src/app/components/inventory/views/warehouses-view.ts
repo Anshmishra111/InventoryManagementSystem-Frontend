@@ -59,7 +59,7 @@ import { CommonModule } from '@angular/common';
             <span>Current Stock</span>
             <span class="stock-count">{{ getWarehouseProductCount(w.id) }} items</span>
           </div>
-          <div class="stock-item" *ngFor="let item of getWarehouseInventory(w.id).slice(0,4)">
+          <div class="stock-item" *ngFor="let item of getWarehouseInventory(w.id)">
             <div>
               <div class="stock-name">{{ item.name }}</div>
               <div class="stock-pid">Product #{{ item.id }}</div>

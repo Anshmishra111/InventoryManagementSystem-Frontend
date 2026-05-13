@@ -53,23 +53,23 @@ import { FormsModule } from '@angular/forms';
                 <span class="tag-received" *ngIf="po.status === 'FULLY_RECEIVED' || po.status === 'PARTIALLY_RECEIVED'">RECEIVED</span>
                 <span class="tag-cancelled" *ngIf="po.status === 'CANCELLED'">CANCELLED</span>
                 <span class="tag-approved" *ngIf="po.status === 'APPROVED'">APPROVED</span>
-                <span class="tag-created" *ngIf="po.status === 'DRAFT'">DRAFT</span>
+                <span class="tag-created" *ngIf="po.status === 'DRAFT' || po.status === 'PENDING'">{{ po.status }}</span>
               </td>
               <td class="items-cell">
                 <div *ngFor="let item of (po.items || [])" class="po-item-line">
                   {{ getProductName(item.productId) }} × {{ item.quantity }} @ ₹{{ item.unitPrice }}
                 </div>
                 <div *ngIf="!po.items || po.items.length === 0" class="po-item-line">
-                  {{ getProductName(po.productId) }}
+                  {{ getProductName(po.productId) }} x {{ po.quantity }} @ ₹{{ po.unitPrice }}
                 </div>
               </td>
               <td class="total-cell">₹{{ (po.totalAmount || 0) | number:'1.2-2' }}</td>
               <td class="actions-cell" *ngIf="canCreate || canApprove || canReceive">
-                <button class="btn-approve" *ngIf="po.status === 'DRAFT' && canApprove"
+                <button class="btn-approve" *ngIf="(po.status === 'DRAFT' || po.status === 'PENDING') && canApprove"
                   (click)="statusChange.emit({id: po.id, status: 'APPROVED'})">✓ Approve</button>
                 <button class="btn-receive" *ngIf="po.status === 'APPROVED' && canReceive"
                   (click)="statusChange.emit({id: po.id, status: 'RECEIVED'})">📦 Receive</button>
-                <button class="btn-cancel" *ngIf="(po.status === 'DRAFT' || po.status === 'APPROVED') && canApprove"
+                <button class="btn-cancel" *ngIf="(po.status === 'DRAFT' || po.status === 'PENDING' || po.status === 'APPROVED') && canApprove"
                   (click)="statusChange.emit({id: po.id, status: 'CANCELLED'})">✕</button>
                 <span *ngIf="po.status === 'FULLY_RECEIVED' || po.status === 'CANCELLED' || (!canApprove && !canReceive)" class="status-final">—</span>
               </td>

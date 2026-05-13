@@ -99,7 +99,7 @@ import { WarehousesViewComponent } from './views/warehouses-view';
               </div>
               <div class="form-group" style="margin-top:1rem">
                 <label>Select Product *</label>
-                <select [(ngModel)]="formData.productId" name="pp" required class="form-select">
+                <select [(ngModel)]="formData.productId" (change)="onProductSelect()" name="pp" required class="form-select">
                   <option *ngFor="let p of inventory" [value]="p.id">{{ p.name }}</option>
                 </select>
               </div>
@@ -429,13 +429,26 @@ export class InventoryComponent implements OnInit {
   }
 
   loadAllData() {
-    this.inventoryService.getInventory().subscribe(d => { this.inventory = d || []; this.cdr.detectChanges(); });
+    const fork = () => {
+      if (this.inventory.length > 0 && this.warehouseInventory.length > 0) {
+        this.inventory.forEach(p => {
+          const total = this.warehouseInventory
+            .filter(wi => wi.productId?.toString() === p.id?.toString())
+            .reduce((sum, wi) => sum + (wi.quantity || 0), 0);
+          p.currentStockLevel = total;
+        });
+        this.cdr.detectChanges();
+      }
+    };
+
+    this.inventoryService.getInventory().subscribe(d => { this.inventory = d || []; fork(); });
     this.http.get<any[]>('/api/dashboard/warehouse').subscribe(d => { this.warehouses = d || []; this.cdr.detectChanges(); });
     this.http.get<any[]>('/api/dashboard/suppliers').subscribe(d => { this.suppliers = d || []; this.cdr.detectChanges(); });
     this.http.get<any[]>('/api/dashboard/sales/orders').subscribe(d => { this.orders = d || []; this.cdr.detectChanges(); });
     this.http.get<any[]>('/api/dashboard/purchase/orders').subscribe(d => { this.purchaseOrders = d || []; this.cdr.detectChanges(); });
     this.http.get<any[]>('/api/dashboard/movements').subscribe(d => { this.movements = d || []; this.cdr.detectChanges(); });
-    this.http.get<any[]>('/api/dashboard/movements/inventory').subscribe(d => { this.warehouseInventory = d || []; this.cdr.detectChanges(); });
+    this.http.get<any[]>('/api/dashboard/movements/inventory').subscribe(d => { this.warehouseInventory = d || []; fork(); });
+    
     if (this.authService.getRole() === 'ADMIN') {
       this.http.get<any[]>('/api/dashboard/admin/users').subscribe(d => { this.users = d || []; this.cdr.detectChanges(); });
     }
@@ -468,6 +481,14 @@ export class InventoryComponent implements OnInit {
 
   getProductName(id: any) { return this.inventory.find(p => p.id?.toString() === id?.toString())?.name || 'Product #' + id; }
   getWarehouseName(id: any) { return this.warehouses.find(w => w.id?.toString() === id?.toString())?.name || (id ? 'Warehouse #' + id : '-'); }
+
+  onProductSelect() {
+    const product = this.inventory.find(p => p.id?.toString() === this.formData.productId?.toString());
+    if (product && this.modalView === 'purchase') {
+      this.formData.unitPrice = product.costPrice;
+    }
+    this.cdr.detectChanges();
+  }
 
   toggleAlerts(e: Event) { e.stopPropagation(); this.showAlerts = !this.showAlerts; this.cdr.detectChanges(); }
 
