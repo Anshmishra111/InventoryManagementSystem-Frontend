@@ -592,11 +592,11 @@ export class InventoryComponent implements OnInit {
   }
 
   deactivateProduct(id: number) { this.http.delete(`/api/dashboard/inventory/${id}`).subscribe(() => this.loadAllData()); }
-  activateProduct(id: number) { const p = this.inventory.find(x => x.id === id); if(p) { p.active = true; this.http.put(`/api/dashboard/inventory/${id}`, p).subscribe(() => this.loadAllData()); } }
+  activateProduct(id: number) { this.http.post(`/api/dashboard/inventory/${id}/activate`, {}).subscribe(() => this.loadAllData()); }
   deleteWarehouse(id: number) { if (confirm('Delete warehouse?')) this.http.delete(`/api/dashboard/warehouse/${id}`).subscribe(() => this.loadAllData()); }
   deleteSupplier(id: number) { if (confirm('Delete supplier?')) this.http.delete(`/api/dashboard/suppliers/${id}`).subscribe(() => this.loadAllData()); }
-  deactivateSupplier(id: number) { const s = this.suppliers.find(x => x.id === id); if(s) { s.active = false; this.http.put(`/api/dashboard/suppliers/${id}`, s).subscribe(() => this.loadAllData()); } }
-  activateSupplier(id: number) { const s = this.suppliers.find(x => x.id === id); if(s) { s.active = true; this.http.put(`/api/dashboard/suppliers/${id}`, s).subscribe(() => this.loadAllData()); } }
+  deactivateSupplier(id: number) { this.http.delete(`/api/dashboard/suppliers/${id}`).subscribe(() => this.loadAllData()); }
+  activateSupplier(id: number) { this.http.post(`/api/dashboard/suppliers/${id}/activate`, {}).subscribe(() => this.loadAllData()); }
   openAddStockModal(warehouse: any) {
     this.isEdit = false;
     this.modalView = 'movements';
